@@ -804,7 +804,12 @@ def resolve_model_path(model_path_value: str) -> str:
 # Main
 # =========================
 def main():
-    config_path = CONFIG_PATH
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--config", type=str, default=CONFIG_PATH,
+                    help="配置文件路径（默认英文评测配置）")
+    args = ap.parse_args()
+    config_path = args.config
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"配置文件不存在: {config_path}")
 
@@ -817,7 +822,7 @@ def main():
     section = parser[CONFIG_SECTION]
 
     cases_file = resolve_project_path(section.get("cases_file", "data/cases.jsonl"), "data/cases.jsonl")
-    output_dir = resolve_project_path(section.get("output_dir", "embeddings"), "embeddings")
+    output_dir = resolve_project_path(section.get("output_dir", "outputs/embeddings"), "outputs/embeddings")
     model_path = resolve_model_path(section.get("model_path", "models/bge-m3"))
 
     batch_size = section.getint("batch_size", fallback=16)

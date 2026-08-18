@@ -168,7 +168,7 @@ def compute_pair_dim(
 ) -> int:
     _resolve_architecture_mode(architecture_mode)
     agg_dim = compute_aggregated_report_dim(store, paper_text_fields=paper_text_fields)
-    return int(3 * agg_dim)
+    return int(4 * agg_dim)
 
 
 def _get_cat_token_without_vocab(row: Optional[Dict[str, Any]], field: str) -> str:
@@ -228,7 +228,7 @@ def build_pair_features_current(
 
         q_report = np.concatenate(q_report_parts, axis=0).astype(np.float32) if q_report_parts else np.zeros((0,), dtype=np.float32)
         c_report = np.concatenate(c_report_parts, axis=0).astype(np.float32) if c_report_parts else np.zeros((0,), dtype=np.float32)
-        deep_vec = np.concatenate([q_report, c_report, np.abs(q_report - c_report)], axis=0).astype(np.float32)
+        deep_vec = np.concatenate([q_report, c_report, np.abs(q_report - c_report), q_report * c_report], axis=0).astype(np.float32)
 
         wide_rows.append(np.asarray(wide_row, dtype=np.float32))
         pair_vectors.append(deep_vec)
@@ -255,7 +255,7 @@ def build_pair_features_current(
             "deep": {
                 "aggregated_text_fields": list(fields),
                 "aggregated_report_dim": int(agg_dim),
-                "pair_input_form": "[h(u), h(v), |h(u)-h(v)|]",
+                "pair_input_form": "[h(u), h(v), |h(u)-h(v)|, h(u)*h(v)]",
                 "input_dim": int(pair_dim),
             },
         },

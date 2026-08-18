@@ -29,13 +29,12 @@ BASE_DIR = Path(__file__).resolve().parents[3]
 CASES_FILE = os.path.join(BASE_DIR, "data", "eval_cases.jsonl")
 STRUCTURE_FILE = os.path.join(BASE_DIR, "data", "eval_structure.json")
 RECALL_FILE = os.path.join(BASE_DIR, "outputs", "recall.jsonl")
-OUTPUT_DIR = os.path.join(BASE_DIR,"prepared_pairwise")
+OUTPUT_DIR = os.path.join(BASE_DIR, "outputs", "prepared_pairwise")
 
 TOPM_OUT = 200
 SEED = 42
 TRAIN_RATIO = 0.6
 DEV_RATIO = 0.2
-STRICT_SPLIT = False
 NUM_REPEATS = 5
 NEG_RATIO = 4
 FALLBACK_NEG_PER_EMPTY_Q = 10
@@ -89,7 +88,6 @@ def main():
             query2gt,
             query2minmax,
             caseid2incident,
-            strict_split=STRICT_SPLIT,
             inc_set=train_inc,
             fallback_neg_per_empty_q=FALLBACK_NEG_PER_EMPTY_Q,
             fallback_seed=repeat_seed + 3000,
@@ -102,7 +100,6 @@ def main():
             query2gt,
             query2minmax,
             caseid2incident,
-            strict_split=STRICT_SPLIT,
             inc_set=dev_inc,
             fallback_neg_per_empty_q=FALLBACK_NEG_PER_EMPTY_Q,
             fallback_seed=repeat_seed + 1000,
@@ -113,7 +110,6 @@ def main():
             query2gt,
             query2minmax,
             caseid2incident,
-            strict_split=STRICT_SPLIT,
             inc_set=test_inc,
             fallback_neg_per_empty_q=FALLBACK_NEG_PER_EMPTY_Q,
             fallback_seed=repeat_seed + 2000,
@@ -127,7 +123,6 @@ def main():
         split_meta = {
             "repeat_index": repeat_idx,
             "repeat_seed": repeat_seed,
-            "strict_split": bool(STRICT_SPLIT),
             "train_incidents": sorted(train_inc),
             "dev_incidents": sorted(dev_inc),
             "test_incidents": sorted(test_inc),
@@ -193,7 +188,6 @@ def main():
             "seed": SEED,
             "train_ratio": TRAIN_RATIO,
             "dev_ratio": DEV_RATIO,
-            "strict_split": bool(STRICT_SPLIT),
             "num_repeats": NUM_REPEATS,
             "neg_ratio": NEG_RATIO,
             "fallback_neg_per_empty_q": FALLBACK_NEG_PER_EMPTY_Q,

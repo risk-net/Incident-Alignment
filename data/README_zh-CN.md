@@ -37,6 +37,21 @@
 - 每个事件项：`incident_id`、`ids`
 - 用途：将预测聚类结果与真值结构进行对比评估
 
+### 5) `chinese_eval_cases.jsonl`
+中文 AI 风险事件评测集（case 级），由中文新闻源人工标注。
+
+- 粒度：一条评测 case/news
+- 与 `eval_cases.jsonl` 采用相同的嵌套结构（`event_annotation` / `ai_risk` / `ai_tech`）
+- 用途：对英文训练模型做零样本跨语言评测
+
+### 6) `chinese_eval_structure.json`
+中文评测集的事件-案例真值结构（gold）。
+
+- 顶层结构：`{ "events": [...], "metadata": {...} }`
+- 每个事件项：`incident_id`、`ids`，可选 `is_ai_risk`
+- 200 事件 / 1428 篇标注 report，覆盖 130+ 种事件类型
+- 用途：跨语言聚类/对齐指标评测
+
 ## 文件关系
 
 - `standard_cases.jsonl` 与 `standard_incidents.jsonl` 是标准化全量层。

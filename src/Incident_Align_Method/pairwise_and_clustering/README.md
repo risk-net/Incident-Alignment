@@ -11,6 +11,7 @@
 - `pairwise_model.py`：Deep+Wide 模型与推理工具。
 - `train_deepwide_pairwise.py`：current 架构训练入口。
 - `graph_clustering.py`：图聚类与评估逻辑。
+- `sparse_complete_linkage.py`：面向全量数据的 sparse complete-link 聚类（不构建稠密距离矩阵）。
 - `decode_graph_from_pairwise_checkpoints.py`：checkpoint 解码与配置搜索评估。
 
 ## 输入

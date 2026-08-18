@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-统一的全量 pairwise + clustering 推理入口。
+全量 pairwise 推理入口（与聚类解耦）。
+
+只做 pairwise 推理，把每对 (query, candidate) 的概率写入 pair_predictions_full.jsonl。
+聚类由 run_full_clustering.py 独立执行，从该文件读回分数，无需重复推理。
 
 运行方式：
 python src/Incident_Align_Method/full_application/run_full_inference.py \
@@ -39,18 +42,8 @@ PAIRWISE_DIR = METHOD_DIR / "pairwise_and_clustering"
 if str(PAIRWISE_DIR) not in sys.path:
     sys.path.insert(0, str(PAIRWISE_DIR))
 
-from graph_clustering import build_pred_clusters_sparse
 from pairwise_data_io import norm_id
 from pairwise_model import EmbeddingsStore, load_checkpoint, predict_probs
-
-
-CAT_FIELDS = [
-    "actor_main_type", "ai_system_type", "domain", "event_type",
-    "event_cause", "event_process", "event_result", "ai_risk_description",
-    "ai_risk_type", "ai_risk_subtype", "harm_type", "harm_severity",
-    "affected_actor_type", "affected_actor_subtype", "realized_or_potential",
-    "risk_stage",
-]
 
 
 def require_psycopg2():
@@ -74,7 +67,7 @@ def load_model_checkpoint(model_path: str, device: str, embeddings_dir: str):
     if not os.path.exists(embeddings_dir):
         raise FileNotFoundError(f"embeddings_dir 不存在: {embeddings_dir}")
 
-    model, checkpoint, tab_preprocessor = load_checkpoint(model_path, device=device)
+    model, checkpoint, _tab_preprocessor = load_checkpoint(model_path, device=device)
     if "vocabs" not in checkpoint:
         raise ValueError("checkpoint 中缺少 vocabs，无法执行全量推理")
 
@@ -85,12 +78,8 @@ def load_model_checkpoint(model_path: str, device: str, embeddings_dir: str):
     return {
         "model": model,
         "checkpoint": checkpoint,
-        "tab_preprocessor": tab_preprocessor,
         "store": store,
-        "vocabs": checkpoint["vocabs"],
         "text_fields": text_fields,
-        "sim_fields": sim_fields,
-        "missing_policy": checkpoint.get("missing_policy", "ignore"),
     }
 
 
@@ -265,23 +254,6 @@ def create_pair_batches_from_recall(
         yield batch
 
 
-def materialize_clusters(clusters: List[List[str]]) -> Tuple[Dict[str, int], List[Dict[str, object]]]:
-    assignments: Dict[str, int] = {}
-    cluster_rows: List[Dict[str, object]] = []
-    for cluster_id, case_ids in enumerate(clusters):
-        ordered_case_ids = sorted(norm_id(cid) for cid in case_ids)
-        for cid in ordered_case_ids:
-            assignments[cid] = cluster_id
-        cluster_rows.append(
-            {
-                "cluster_id": cluster_id,
-                "size": len(ordered_case_ids),
-                "case_ids": ordered_case_ids,
-            }
-        )
-    return assignments, cluster_rows
-
-
 def main():
     parser = argparse.ArgumentParser(description="统一的全量 pairwise + clustering 推理入口")
     parser.add_argument(
@@ -306,17 +278,9 @@ def main():
     pair_batch_size = get_int(section, "pair_batch_size", 10000)
     topm_out = get_int(section, "topm_out", 250)
     threshold = get_float(section, "threshold", 0.5)
-    edge_rule = (section.get("edge_rule", "mutual") or "mutual").strip()
-    merge_strategy = (section.get("merge_strategy", "closure") or "closure").strip()
-    k_core = get_int(section, "k_core", 2)
-    k_attach = get_int(section, "k_attach", 2)
 
     if device == "auto":
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
-    if edge_rule not in {"either", "mutual"}:
-        raise ValueError(f"不支持的 edge_rule: {edge_rule}")
-    if merge_strategy not in {"closure", "k_support", "complete_link"}:
-        raise ValueError(f"不支持的 merge_strategy: {merge_strategy}")
 
     print("🚀 开始全量推理")
     print(f"   - checkpoint: {checkpoint_path}")
@@ -328,11 +292,8 @@ def main():
     bundle = load_model_checkpoint(checkpoint_path, device, embeddings_dir)
     model = bundle["model"]
     checkpoint = bundle["checkpoint"]
-    tab_preprocessor = bundle["tab_preprocessor"]
     store = bundle["store"]
-    vocabs = bundle["vocabs"]
     text_fields = bundle["text_fields"]
-    sim_fields = bundle["sim_fields"]
 
     cases_data, case2cats = load_cases_from_database(db_config)
     valid_embed_ids = set(store.caseid2idx.keys())
@@ -342,11 +303,8 @@ def main():
     output_root = Path(output_dir)
     output_root.mkdir(parents=True, exist_ok=True)
     pair_pred_file = output_root / "pair_predictions_full.jsonl"
-    cluster_file = output_root / "clusters.json"
-    assignment_file = output_root / "cluster_assignments.json"
     config_file = output_root / "inference_config.json"
 
-    directed_pred: Dict[Tuple[str, str], int] = {}
     scored_nodes: Set[str] = set()
     total_pairs_scored = 0
 
@@ -389,29 +347,13 @@ def main():
                 }
                 fout.write(json.dumps(record, ensure_ascii=False) + "\n")
                 total_pairs_scored += 1
-                if prediction == 1:
-                    directed_pred[(qn, cn)] = 1
             if total_pairs_scored and total_pairs_scored % 200000 == 0:
-                print(f"   - scored={total_pairs_scored}, edges>thr={len(directed_pred)}", flush=True)
+                print(f"   - scored={total_pairs_scored}", flush=True)
 
     if not scored_nodes:
         raise ValueError("没有生成任何 pair 预测，请检查 recall 文件、DB 数据和 embeddings 的 id 是否一致")
 
-    print("\n🔗 进行图聚类...")
-    clusters = build_pred_clusters_sparse(
-        nodes=sorted(scored_nodes),
-        directed_pred=directed_pred,
-        edge_rule=edge_rule,
-        merge_strategy=merge_strategy,
-        k_core=k_core,
-        k_attach=k_attach,
-    )
-    assignments, cluster_rows = materialize_clusters(clusters)
-
-    with open(cluster_file, "w", encoding="utf-8") as f:
-        json.dump(cluster_rows, f, ensure_ascii=False, indent=2)
-    with open(assignment_file, "w", encoding="utf-8") as f:
-        json.dump(assignments, f, ensure_ascii=False, indent=2, sort_keys=True)
+    print("\n✅ pairwise 推理完成。聚类请运行 run_full_clustering.py。")
 
     training_config = checkpoint.get("training_config", {})
     run_config = {
@@ -435,17 +377,11 @@ def main():
             "pair_batch_size": pair_batch_size,
             "topm_out": topm_out,
             "threshold": threshold,
-            "edge_rule": edge_rule,
-            "merge_strategy": merge_strategy,
-            "k_core": k_core,
-            "k_attach": k_attach,
         },
         "stats": {
             "total_db_cases": len(cases_data),
             "total_scored_nodes": len(scored_nodes),
             "total_pairs_scored": total_pairs_scored,
-            "predicted_edges": len(directed_pred),
-            "predicted_clusters": len(cluster_rows),
         },
         "checkpoint_info": {
             "best_dev_f1": float(checkpoint.get("best_dev_event_macro_f1", 0.0)),
@@ -468,15 +404,12 @@ def main():
 
     print("\n📊 推理结果统计:")
     print(f"   - 总案例数(DB): {len(cases_data)}")
-    print(f"   - 参与聚类节点数: {len(scored_nodes)}")
-    print(f"   - 评分快对数: {total_pairs_scored}")
-    print(f"   - 预测边数(>=threshold): {len(directed_pred)}")
-    print(f"   - 聚类簇数: {len(cluster_rows)}")
+    print(f"   - 参与推理节点数: {len(scored_nodes)}")
+    print(f"   - 评分 pair 对数: {total_pairs_scored}")
     print(f"\n💾 结果已保存到: {output_root}")
     print(f"   - {pair_pred_file}")
-    print(f"   - {cluster_file}")
-    print(f"   - {assignment_file}")
     print(f"   - {config_file}")
+    print(f"\n🔗 下一步: 运行 run_full_clustering.py 进行聚类。")
 
 
 if __name__ == "__main__":

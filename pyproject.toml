@@ -7,7 +7,7 @@ name = "Incident-Alignment"
 version = "0.1.0"
 description = "AI risk event alignment pipeline"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
   "faiss-cpu>=1.7.4",
   "jsonlines>=4.0.0",
@@ -22,6 +22,9 @@ dependencies = [
   "tqdm>=4.66.0",
 ]
 
+# 项目采用"脚本式"布局：入口脚本通过 sys.path 引用 src/ 下的模块，
+# 不以 Python 包的形式安装，因此不打包任何包（include = []）。
+# pip install -e . 仅用于安装依赖与项目元数据。
 [tool.setuptools]
 package-dir = {"" = "src"}
 

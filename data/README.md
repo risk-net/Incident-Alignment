@@ -37,6 +37,21 @@ Gold event-case structure for evaluation.
 - Each event item: `incident_id`, `ids`
 - Typical usage: clustering/alignment metrics against predicted clusters
 
+### 5) `chinese_eval_cases.jsonl`
+Chinese AI risk event benchmark (case-level), annotated from Chinese news sources.
+
+- Unit: one evaluation case/news per line
+- Same nested schema as `eval_cases.jsonl` (`event_annotation` / `ai_risk` / `ai_tech`)
+- Typical usage: zero-shot cross-lingual evaluation of the English-trained model
+
+### 6) `chinese_eval_structure.json`
+Gold event-case structure for the Chinese benchmark.
+
+- Top-level schema: `{ "events": [...], "metadata": {...} }`
+- Each event item: `incident_id`, `ids`, optional `is_ai_risk`
+- 200 events / 1428 annotated reports, covering 130+ event types
+- Typical usage: cross-lingual clustering/alignment metrics
+
 ## Relationship Between Files
 
 - `standard_cases.jsonl` + `standard_incidents.jsonl` represent the broader standardized dataset layer.

@@ -65,7 +65,12 @@ def load_case_ids(embeddings_dir):
 
 
 def main():
-    config_path = DEFAULT_CONFIG_PATH
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--config", type=str, default=DEFAULT_CONFIG_PATH,
+                    help="配置文件路径（默认英文评测配置）")
+    args = ap.parse_args()
+    config_path = args.config
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"配置文件不存在: {config_path}")
 
@@ -76,8 +81,8 @@ def main():
 
     section = parser[CONFIG_SECTION]
 
-    embeddings_dir = os.path.join(BASE_DIR, section.get("embeddings_dir", "embeddings")).strip()
-    output_dir = os.path.join(BASE_DIR, section.get("output_dir", "faiss_index")).strip()
+    embeddings_dir = os.path.join(BASE_DIR, section.get("embeddings_dir", "outputs/embeddings")).strip()
+    output_dir = os.path.join(BASE_DIR, section.get("output_dir", "outputs/faiss_index")).strip()
     print(f"加载配置文件: {config_path}")
     print(f"embeddings目录: {embeddings_dir}")
     print(f"输出目录: {output_dir}")

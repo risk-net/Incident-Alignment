@@ -233,7 +233,12 @@ def resolve_path(path_value, default_value=None):
 
 
 def main():
-    config_path = DEFAULT_CONFIG_PATH
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--config", type=str, default=DEFAULT_CONFIG_PATH,
+                    help="配置文件路径（默认英文评测配置）")
+    args = ap.parse_args()
+    config_path = args.config
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"配置文件不存在: {config_path}")
 
@@ -245,7 +250,7 @@ def main():
     section = parser[CONFIG_SECTION]
 
     structure_file = resolve_path(section.get("structure_file", "data/eval_structure.json"))
-    faiss_dir = resolve_path(section.get("faiss_dir", "faiss_index"))
+    faiss_dir = resolve_path(section.get("faiss_dir", "outputs/faiss_index"))
 
     embeddings_value = (section.get("embeddings_dir", "") or "").strip()
     if embeddings_value:

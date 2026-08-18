@@ -15,7 +15,7 @@ from scipy.optimize import linear_sum_assignment
 
 MODULE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODULE_DIR.parents[1]
-DEFAULT_PRED_FILE = PROJECT_ROOT / "outputs" / "Incident_Align_Evaluation" / "vector_baseline" / "clusters.json"
+DEFAULT_PRED_FILE = PROJECT_ROOT / "outputs" / "Incident_Align_Evaluation" / "baseline_logistic_regression_cv" / "chinese_pred_clusters.json"
 DEFAULT_TRUE_FILE = PROJECT_ROOT / "data" / "eval_structure.json"
 
 
@@ -154,18 +154,35 @@ def resolve_pred_input(pred_file: str) -> PredInputResolution:
     raise ValueError(f"Unsupported prediction file format: {pred_path}")
 
 
+def _normalize_cluster(cluster: Any, idx: int) -> Tuple[str, set]:
+    """Handle both list-of-lists and dict-with-incident_id formats."""
+    if isinstance(cluster, list):
+        # decode 输出的 list-of-lists 格式
+        incident_id = str(idx + 1)
+        case_ids = set(norm_id(c) for c in cluster)
+    elif isinstance(cluster, dict):
+        incident_id = norm_id(cluster.get("incident_id", str(idx + 1)))
+        case_ids = set(norm_id(c) for c in cluster.get("cases", cluster.get("ids", [])))
+    else:
+        incident_id = str(idx + 1)
+        case_ids = set()
+    return incident_id, case_ids
+
+
 def prepare_cluster_sets(
-    pred_clusters: List[Dict[str, Any]],
-    true_clusters: List[Dict[str, Any]],
+    pred_clusters: List[Any],
+    true_clusters: List[Any],
 ) -> Tuple[Dict[str, set], Dict[str, set]]:
-    pred_sets = {
-        norm_id(cluster["incident_id"]): set(norm_id(case_id) for case_id in cluster.get("cases", []))
-        for cluster in pred_clusters
-    }
-    true_sets = {
-        norm_id(cluster["incident_id"]): set(norm_id(case_id) for case_id in cluster.get("ids", []))
-        for cluster in true_clusters
-    }
+    pred_sets = {}
+    for i, cluster in enumerate(pred_clusters):
+        incident_id, case_ids = _normalize_cluster(cluster, i)
+        pred_sets[incident_id] = case_ids
+
+    true_sets = {}
+    for i, cluster in enumerate(true_clusters):
+        incident_id, case_ids = _normalize_cluster(cluster, i)
+        true_sets[incident_id] = case_ids
+
     return pred_sets, true_sets
 
 

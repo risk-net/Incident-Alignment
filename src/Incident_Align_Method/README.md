@@ -69,8 +69,8 @@
 
 典型产物：
 
-- `embeddings/`
-- `faiss_index/`
+- `outputs/embeddings/`
+- `outputs/faiss_index/`
 - `outputs/recall.jsonl`
 - `outputs/metrics/recall_metrics.json`
 
@@ -93,7 +93,7 @@
 
 典型产物：
 
-- `prepared_pairwise/`
+- `outputs/prepared_pairwise/`
 - `outputs/.../repeat_*/epoch_*.pt`
 - `outputs/.../best_model/`
 
@@ -234,9 +234,9 @@ python src/Incident_Align_Method/full_application/run_full_inference.py \
 公开版默认假设你从仓库根目录运行脚本。大多数脚本会围绕这些工作目录组织：
 
 - `data/`
-- `embeddings/`
-- `faiss_index/`
-- `prepared_pairwise/`
+- `outputs/embeddings/`
+- `outputs/faiss_index/`
+- `outputs/prepared_pairwise/`
 - `outputs/`
 
 实验主线常见输入包括：
@@ -249,12 +249,12 @@ python src/Incident_Align_Method/full_application/run_full_inference.py \
 
 - `data/eval_cases.jsonl`
 - `data/eval_structure.json`
-- `embeddings/case_ids.txt`
-- `embeddings/emb_text.npy`
-- `embeddings/emb_event.npy`
-- `faiss_index/*.index`
+- `outputs/embeddings/case_ids.txt`
+- `outputs/embeddings/emb_text.npy`
+- `outputs/embeddings/emb_event.npy`
+- `outputs/faiss_index/*.index`
 - `outputs/recall.jsonl`
-- `prepared_pairwise/manifest.json`
+- `outputs/prepared_pairwise/manifest.json`
 
 最终实验产物通常包括：
 

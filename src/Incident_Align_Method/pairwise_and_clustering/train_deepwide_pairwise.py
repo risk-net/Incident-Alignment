@@ -31,8 +31,8 @@ from pairwise_model import (
 
 BASE_DIR = Path(__file__).resolve().parents[3]
 
-PREPARED_DIR = os.path.join(BASE_DIR, "prepared_pairwise")
-EMBEDDINGS_DIR = os.path.join(BASE_DIR, "embeddings")
+PREPARED_DIR = os.path.join(BASE_DIR, "outputs", "prepared_pairwise")
+EMBEDDINGS_DIR = os.path.join(BASE_DIR, "outputs", "embeddings")
 ARCHITECTURE_MODE = ARCH_CURRENT
 OUTPUT_DIR = os.environ.get("PAIRWISE_OUTPUT_DIR", os.path.join(BASE_DIR, "outputs", "pairwise_train"))
 

@@ -214,7 +214,6 @@ def build_all_pairs(
     query2gt,
     query2minmax,
     caseid2incident,
-    strict_split: bool,
     inc_set: set,
     fallback_neg_per_empty_q: int = 10,
     fallback_seed: int = 42,
@@ -252,7 +251,7 @@ def build_all_pairs(
             c_inc = caseid2incident.get(c, None)
             if c_inc is None:
                 continue
-            if strict_split and (c_inc not in inc_set):
+            if c_inc not in inc_set:
                 continue
 
             y = 1 if c in gt_set else 0
@@ -278,7 +277,7 @@ def build_all_pairs(
             })
             added += 1
 
-        if strict_split and added == 0 and fallback_neg_per_empty_q > 0:
+        if added == 0 and fallback_neg_per_empty_q > 0:
             cand_pool = [x for x in pool if x != q]
             if cand_pool:
                 chosen = cand_pool if len(cand_pool) <= fallback_neg_per_empty_q else rnd.sample(cand_pool, k=fallback_neg_per_empty_q)
@@ -302,7 +301,7 @@ def build_all_pairs(
                         "c_inc": c_inc,
                     })
 
-    if strict_split and fallback_neg_per_empty_q > 0:
+    if fallback_neg_per_empty_q > 0:
         missing_qs = [q for q in pool if q not in visited_q]
         for q in missing_qs:
             q_inc = caseid2incident.get(q, None)

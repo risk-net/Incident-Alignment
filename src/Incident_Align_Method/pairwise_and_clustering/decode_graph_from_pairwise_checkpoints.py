@@ -26,12 +26,7 @@ BASE_DIR = Path(__file__).resolve().parents[3]
 DEFAULT_BATCH_SIZE = 512
 DEFAULT_THRESHOLD_GRID_STEP = 0.02
 DEFAULT_EDGE_RULE_GRID = ["mutual"]
-DEFAULT_MERGE_STRATEGY_GRID = ["complete_link"]
-DEFAULT_K_CORE_GRID = [2, 3, 4]
-DEFAULT_K_ATTACH_GRID = [2, 3, 4]
 SUPPORTED_EDGE_RULES = {"mutual"}
-SUPPORTED_MERGE_STRATEGIES = {"complete_link"}
-_DEFAULT_MISSING_POLICY = "ignore"
 LOGGER = logging.getLogger(__name__)
 
 
@@ -46,9 +41,6 @@ class DecodeConfig:
     batch_size: int
     threshold_grid_step: float
     edge_rule_grid: List[str]
-    merge_strategy_grid: List[str]
-    k_core_grid: List[int]
-    k_attach_grid: List[int]
     overwrite: bool
     config_path: Optional[str] = None
 
@@ -168,19 +160,8 @@ def load_config() -> DecodeConfig:
         raise ValueError("配置项 threshold_grid_step 必须在 (0, 1] 范围内。")
 
     edge_rule_grid = _parse_csv_list(section.get("edge_rule_grid", ",".join(DEFAULT_EDGE_RULE_GRID)))
-    merge_strategy_grid = _parse_csv_list(section.get("merge_strategy_grid", ",".join(DEFAULT_MERGE_STRATEGY_GRID)))
-    k_core_grid = _normalize_int_list(
-        _parse_csv_list(section.get("k_core_grid", ",".join(str(x) for x in DEFAULT_K_CORE_GRID))),
-        "k_core_grid",
-    )
-    k_attach_grid = _normalize_int_list(
-        _parse_csv_list(section.get("k_attach_grid", ",".join(str(x) for x in DEFAULT_K_ATTACH_GRID))),
-        "k_attach_grid",
-    )
     edge_rule_grid = _normalize_str_list(edge_rule_grid, "edge_rule_grid")
-    merge_strategy_grid = _normalize_str_list(merge_strategy_grid, "merge_strategy_grid")
     _validate_choice_list(edge_rule_grid, "edge_rule_grid", SUPPORTED_EDGE_RULES)
-    _validate_choice_list(merge_strategy_grid, "merge_strategy_grid", SUPPORTED_MERGE_STRATEGIES)
 
     return DecodeConfig(
         prepared_dir=_resolve_project_path(section.get("prepared_dir"), "prepared_dir"),
@@ -192,9 +173,6 @@ def load_config() -> DecodeConfig:
         batch_size=batch_size,
         threshold_grid_step=threshold_grid_step,
         edge_rule_grid=edge_rule_grid,
-        merge_strategy_grid=merge_strategy_grid,
-        k_core_grid=k_core_grid,
-        k_attach_grid=k_attach_grid,
         overwrite=section.getboolean("overwrite", fallback=False),
         config_path=str(config_path),
     )
@@ -290,9 +268,6 @@ def _config_signature(config: DecodeConfig) -> Dict[str, Any]:
         "batch_size": int(config.batch_size),
         "threshold_grid_step": float(config.threshold_grid_step),
         "edge_rule_grid": list(config.edge_rule_grid),
-        "merge_strategy_grid": list(config.merge_strategy_grid),
-        "k_core_grid": [int(x) for x in config.k_core_grid],
-        "k_attach_grid": [int(x) for x in config.k_attach_grid],
     }
 
 
@@ -342,8 +317,8 @@ def _select_global_best_model(per_repeat_results: List[Dict[str, Any]]) -> Dict[
 
     def _sort_key(result: Dict[str, Any]) -> Tuple[float, float, int, int]:
         return (
-            float(result["test_metrics"]["event_macro_f1_hungarian"]),
             float(result["best_dev_score"]),
+            float(result["test_metrics"]["event_macro_f1_hungarian"]),
             -int(result["repeat_idx"]),
             -int(result["best_epoch"]),
         )
@@ -372,8 +347,8 @@ def _materialize_global_best_model(output_dir: str, global_best: Dict[str, Any])
     _copy_file(global_best["files"]["pair_predictions"], best_paths["pair_predictions_test"])
 
     model_selection = {
-        "selection_policy": "global_best_on_test_event_macro_f1_hungarian",
-        "selection_metric": "event_macro_f1_hungarian",
+        "selection_policy": "global_best_on_dev_graph_score",
+        "selection_metric": "dev_graph_score",
         "repeat_idx": int(global_best["repeat_idx"]),
         "seed": int(global_best["seed"]),
         "best_epoch": int(global_best["best_epoch"]),
@@ -633,10 +608,6 @@ def search_best_checkpoint_for_repeat(
             dev_case_ids=split_meta["dev_case_ids"],
             gold_clusters_dev=split_meta["gold_clusters_dev"],
             edge_rule_grid=config.edge_rule_grid,
-            merge_strategy_grid=config.merge_strategy_grid,
-            k_core_grid=config.k_core_grid,
-            k_attach_grid=config.k_attach_grid,
-            missing_policy=_DEFAULT_MISSING_POLICY,
             threshold_grid_step=config.threshold_grid_step,
         )
         search_record = {
@@ -647,14 +618,11 @@ def search_best_checkpoint_for_repeat(
         }
         search_records.append(search_record)
         LOGGER.info(
-            "[Repeat %s Epoch %s] dev_best_graph_score=%.4f | edge_rule=%s merge=%s k_core=%s k_attach=%s thr=%.2f",
+            "[Repeat %s Epoch %s] dev_best_graph_score=%.4f | edge_rule=%s thr=%.2f",
             repeat_idx,
             epoch,
             best_cfg["score"],
             best_cfg["edge_rule"],
-            best_cfg["merge_strategy"],
-            best_cfg["k_core"],
-            best_cfg["k_attach"],
             best_cfg["threshold"],
         )
 
@@ -706,7 +674,6 @@ def evaluate_repeat_with_best_checkpoint(
         gold_clusters=split_meta["gold_clusters_dev"],
         device=artifacts.device,
         best_cfg=best_for_repeat["best_config"],
-        missing_policy=_DEFAULT_MISSING_POLICY,
         batch_size=config.batch_size,
         num_pairs=dev_count,
         architecture_mode=architecture_mode,
@@ -722,7 +689,6 @@ def evaluate_repeat_with_best_checkpoint(
         gold_clusters=split_meta["gold_clusters_test"],
         device=artifacts.device,
         best_cfg=best_for_repeat["best_config"],
-        missing_policy=_DEFAULT_MISSING_POLICY,
         batch_size=config.batch_size,
         num_pairs=test_count,
         architecture_mode=architecture_mode,
@@ -852,9 +818,28 @@ def build_global_summary(
     per_repeat_results: List[Dict[str, Any]],
     global_best_model: Dict[str, Any],
 ) -> Dict[str, Any]:
-    test_f1_values = [r["test_metrics"]["event_macro_f1_hungarian"] for r in per_repeat_results]
+    def _metric_vals(key):
+        return [r["test_metrics"].get(key, 0.0) for r in per_repeat_results]
+
+    test_f1_values = _metric_vals("event_macro_f1_hungarian")
     dev_scores = [r["best_dev_score"] for r in per_repeat_results]
     base_dir = artifacts.config.path_display_base
+
+    def _mean_std(values):
+        arr = np.array(values, dtype=np.float64)
+        return float(np.mean(arr)) if len(arr) else 0.0, float(np.std(arr)) if len(arr) else 0.0
+
+    # New metrics
+    b3_f1_vals = _metric_vals("b_cubed_f1")
+    ari_vals = _metric_vals("ari")
+    ipf_vals = _metric_vals("induced_pair_f1")
+    pair_macro_vals = _metric_vals("pair_macro_f1")
+
+    b3_mean, b3_std = _mean_std(b3_f1_vals)
+    ari_mean, ari_std = _mean_std(ari_vals)
+    ipf_mean, ipf_std = _mean_std(ipf_vals)
+    pair_mean, pair_std = _mean_std(pair_macro_vals)
+
     return {
         "script": _display_path(__file__, base_dir),
         "train_summary": _display_path(artifacts.training_summary_path, base_dir),
@@ -869,17 +854,17 @@ def build_global_summary(
             "batch_size": artifacts.config.batch_size,
             "threshold_grid_step": artifacts.config.threshold_grid_step,
             "edge_rule_grid": artifacts.config.edge_rule_grid,
-            "merge_strategy_grid": artifacts.config.merge_strategy_grid,
-            "k_core_grid": artifacts.config.k_core_grid,
-            "k_attach_grid": artifacts.config.k_attach_grid,
             "overwrite": artifacts.config.overwrite,
-            "missing_policy_internal": _DEFAULT_MISSING_POLICY,
         },
         "num_repeats": len(per_repeat_results),
-        "avg_dev_best_graph_score": float(np.mean(dev_scores)) if dev_scores else 0.0,
-        "std_dev_best_graph_score": float(np.std(dev_scores)) if dev_scores else 0.0,
-        "avg_test_event_macro_f1_hungarian": float(np.mean(test_f1_values)) if test_f1_values else 0.0,
-        "std_test_event_macro_f1_hungarian": float(np.std(test_f1_values)) if test_f1_values else 0.0,
+        "test_metrics_across_repeats": {
+            "event_macro_f1_hungarian": {"mean": _mean_std(test_f1_values)[0], "std": _mean_std(test_f1_values)[1]},
+            "b_cubed_f1": {"mean": b3_mean, "std": b3_std},
+            "ari": {"mean": ari_mean, "std": ari_std},
+            "induced_pair_f1": {"mean": ipf_mean, "std": ipf_std},
+            "pair_macro_f1": {"mean": pair_mean, "std": pair_std},
+        },
+        "dev_best_graph_score": {"mean": _mean_std(dev_scores)[0], "std": _mean_std(dev_scores)[1]},
         "global_best_model": global_best_model,
         "repeats": [_public_repeat_result(result, base_dir) for result in per_repeat_results],
     }
@@ -937,8 +922,8 @@ def main():
             "path_display_base": _display_path(config.path_display_base, config.path_display_base),
             "device": artifacts.device,
             "overwrite": config.overwrite,
-            "global_best_selection_policy": "global_best_on_test_event_macro_f1_hungarian",
-            "global_best_selection_metric": "event_macro_f1_hungarian",
+            "global_best_selection_policy": "global_best_on_dev_graph_score",
+            "global_best_selection_metric": "dev_graph_score",
         },
     )
 
