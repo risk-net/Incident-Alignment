@@ -75,6 +75,15 @@ python src/Incident_Align_Evaluation/run_chinese_eval_inference.py \
 
 输出：`outputs/chinese_eval_alignment/`（含 `chinese_eval_metrics.json` + `chinese_pred_clusters.json`）。
 
+**独立评估已有结果**（无需重跑推理）：若已有预测簇 `chinese_pred_clusters.json`，可直接对金标计算完整指标：
+```bash
+python src/Incident_Align_Evaluation/evaluate_chinese_eval.py \
+  --pred_file outputs/chinese_eval_alignment/chinese_pred_clusters.json \
+  --true_file data/chinese_eval_structure.json
+```
+
+输出完整指标（Hungarian F1 G→P / P→G / 对称、B-cubed、ARI、Induced-pair F1），与英文五折 CV 使用同一套评估函数，口径一致。
+
 ## 默认路径说明
 
 脚本支持直接在任意工作目录运行；默认路径会基于脚本位置解析到仓库根目录，而不是依赖当前 shell 的工作目录。
