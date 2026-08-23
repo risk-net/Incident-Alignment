@@ -104,6 +104,11 @@ Additional evaluation files:
 - `data/chinese_eval_cases.jsonl` — Chinese AI risk event benchmark (case-level)
 - `data/chinese_eval_structure.json` — Chinese benchmark gold event clusters
 
+> **Note**: Per the public-release policy, original article full-text has been
+> removed from the tracked data files. Files retain titles, metadata,
+> structures, and RiskNet annotations. A restricted version with the original
+> full-text is available from the RiskNet authors under a data-use agreement.
+
 For detailed field and relationship descriptions:
 - English: [data/README.md](data/README.md)
 - 中文：[data/README_zh-CN.md](data/README_zh-CN.md)

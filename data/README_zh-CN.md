@@ -7,13 +7,15 @@
 - `standard_*`：标准化全量数据层
 - `eval_*`：评测子集 + 评测真值结构
 
+> **公开版策略**：为公开仓库考虑，已从被跟踪的数据文件中移除原始新闻/文章全文（`text`、`description`、`summary` 等字段）。文件保留标题、元数据、结构与 RiskNet 标注。含原文全文的合作版可由 RiskNet 作者在数据使用协议下提供。
+
 ## 核心文件
 
 ### 1) `standard_cases.jsonl`
 标准化后的案例级语料（JSONL，每行一条）。
 
 - 粒度：一条 case/news
-- 常见关键字段：`id`、`title`、`text`（以及来源元信息）
+- 常见关键字段：`id`、`title`、来源元信息与标注（原文全文 `text` 按公开版策略已移除）
 - 用途：作为上游标准数据来源，用于构建评测数据
 
 ### 2) `standard_incidents.jsonl`
@@ -59,8 +61,8 @@
 - `eval_structure.json` 是对应评测范围的真值分组结构。
 
 简要理解：
-- `eval_cases.jsonl` 提供“样本内容”；
-- `eval_structure.json` 提供“这些样本应如何按事件分组”。
+- `eval_cases.jsonl` 提供样本标识、元数据与 RiskNet 标注（原文全文见合作版）；
+- `eval_structure.json` 提供”这些样本应如何按事件分组”。
 
 ## 注意事项
 

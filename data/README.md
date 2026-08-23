@@ -7,13 +7,20 @@ This directory contains two layers of data used by the alignment pipeline:
 - `standard_*`: standardized full data assets
 - `eval_*`: evaluation subset + gold clustering structure used in experiments
 
+> **Public-release policy**: original news/article full-text fields (`text`,
+> `description`, `summary`, etc.) have been removed from the tracked data files
+> for the public repository. Files retain titles, metadata, structures, and
+> RiskNet annotations. A restricted version containing the original full-text
+> is available from the RiskNet authors under a data-use agreement.
+
 ## Core Files
 
 ### 1) `standard_cases.jsonl`
 Standardized case-level corpus (one JSON object per line).
 
 - Unit: one case/news record
-- Key fields (common): `id`, `title`, `text`, plus source/metadata fields
+- Key fields (common): `id`, `title`, plus source/metadata fields and annotations
+  (original full-text `text` excluded per public-release policy)
 - Typical usage: upstream data source for building evaluation sets
 
 ### 2) `standard_incidents.jsonl`
@@ -59,7 +66,8 @@ Gold event-case structure for the Chinese benchmark.
 - `eval_structure.json` is the gold clustering structure corresponding to the evaluation scope.
 
 In short:
-- `eval_cases.jsonl` provides the case content.
+- `eval_cases.jsonl` provides case identifiers, metadata, and RiskNet annotations
+  (source full-text is available in the restricted version).
 - `eval_structure.json` provides the ground-truth grouping of those cases into incidents.
 
 ## Notes

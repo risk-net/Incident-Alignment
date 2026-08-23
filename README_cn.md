@@ -111,6 +111,8 @@ export DB_PASSWORD='<你的密码>'
 - `data/chinese_eval_cases.jsonl` — 中文 AI 风险事件评测集（case 级）
 - `data/chinese_eval_structure.json` — 中文评测集 gold 事件簇
 
+> **注意**：按公开版策略，已从被跟踪的数据文件中移除原文全文。文件保留标题、元数据、结构与 RiskNet 标注。含原文全文的合作版可由 RiskNet 作者在数据使用协议下提供。
+
 详细字段与关系说明见：
 
 - 英文：[data/README.md](data/README.md)
