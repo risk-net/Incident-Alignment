@@ -1,0 +1,4 @@
+# 大体积数据走 Git LFS（克隆者需先安装 git-lfs 并 git lfs pull）
+data/**/*.jsonl filter=lfs diff=lfs merge=lfs -text
+data/**/*.csv    filter=lfs diff=lfs merge=lfs -text
+data/**/*.json   filter=lfs diff=lfs merge=lfs -text

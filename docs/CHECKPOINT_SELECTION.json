@@ -1,0 +1,322 @@
+{
+ "note": "每折 8 个 epoch 的 dev 选优证据。选中判据：dev 上 pair 级 positive F1（固定阈值 0.5），对应 checkpoint 元数据字段 dev_pair_f1_pos。选优发生在 τ 扫描之前。",
+ "selection_rule": "argmax over epochs of dev_pair_f1_pos (pair-level, threshold=0.5)",
+ "epochs_per_fold": 8,
+ "folds": {
+  "fold_01": {
+   "selected_epoch": 1,
+   "selected_dev_pair_f1_pos": 0.836722,
+   "selected_file": "deepwide_fold01_epoch1.pt",
+   "all_epochs": [
+    {
+     "epoch": 1,
+     "dev_pair_f1_pos": 0.836722,
+     "file": "deepwide_fold01_epoch1.pt",
+     "bytes": 84423071,
+     "selected": true
+    },
+    {
+     "epoch": 2,
+     "dev_pair_f1_pos": 0.829597,
+     "file": "deepwide_fold01_epoch2.pt",
+     "bytes": 84423071,
+     "selected": false
+    },
+    {
+     "epoch": 3,
+     "dev_pair_f1_pos": 0.823255,
+     "file": "deepwide_fold01_epoch3.pt",
+     "bytes": 84423071,
+     "selected": false
+    },
+    {
+     "epoch": 4,
+     "dev_pair_f1_pos": 0.810659,
+     "file": "deepwide_fold01_epoch4.pt",
+     "bytes": 84423071,
+     "selected": false
+    },
+    {
+     "epoch": 5,
+     "dev_pair_f1_pos": 0.814506,
+     "file": "deepwide_fold01_epoch5.pt",
+     "bytes": 84423071,
+     "selected": false
+    },
+    {
+     "epoch": 6,
+     "dev_pair_f1_pos": 0.794706,
+     "file": "deepwide_fold01_epoch6.pt",
+     "bytes": 84423071,
+     "selected": false
+    },
+    {
+     "epoch": 7,
+     "dev_pair_f1_pos": 0.767753,
+     "file": "deepwide_fold01_epoch7.pt",
+     "bytes": 84423071,
+     "selected": false
+    },
+    {
+     "epoch": 8,
+     "dev_pair_f1_pos": 0.762125,
+     "file": "deepwide_fold01_epoch8.pt",
+     "bytes": 84423071,
+     "selected": false
+    }
+   ]
+  },
+  "fold_02": {
+   "selected_epoch": 1,
+   "selected_dev_pair_f1_pos": 0.812578,
+   "selected_file": "deepwide_fold02_epoch1.pt",
+   "all_epochs": [
+    {
+     "epoch": 1,
+     "dev_pair_f1_pos": 0.812578,
+     "file": "deepwide_fold02_epoch1.pt",
+     "bytes": 84422943,
+     "selected": true
+    },
+    {
+     "epoch": 2,
+     "dev_pair_f1_pos": 0.811598,
+     "file": "deepwide_fold02_epoch2.pt",
+     "bytes": 84422943,
+     "selected": false
+    },
+    {
+     "epoch": 3,
+     "dev_pair_f1_pos": 0.790691,
+     "file": "deepwide_fold02_epoch3.pt",
+     "bytes": 84422943,
+     "selected": false
+    },
+    {
+     "epoch": 4,
+     "dev_pair_f1_pos": 0.787716,
+     "file": "deepwide_fold02_epoch4.pt",
+     "bytes": 84422943,
+     "selected": false
+    },
+    {
+     "epoch": 5,
+     "dev_pair_f1_pos": 0.78799,
+     "file": "deepwide_fold02_epoch5.pt",
+     "bytes": 84422943,
+     "selected": false
+    },
+    {
+     "epoch": 6,
+     "dev_pair_f1_pos": 0.784446,
+     "file": "deepwide_fold02_epoch6.pt",
+     "bytes": 84422943,
+     "selected": false
+    },
+    {
+     "epoch": 7,
+     "dev_pair_f1_pos": 0.788818,
+     "file": "deepwide_fold02_epoch7.pt",
+     "bytes": 84422943,
+     "selected": false
+    },
+    {
+     "epoch": 8,
+     "dev_pair_f1_pos": 0.795881,
+     "file": "deepwide_fold02_epoch8.pt",
+     "bytes": 84422943,
+     "selected": false
+    }
+   ]
+  },
+  "fold_03": {
+   "selected_epoch": 3,
+   "selected_dev_pair_f1_pos": 0.861215,
+   "selected_file": "deepwide_fold03_epoch3.pt",
+   "all_epochs": [
+    {
+     "epoch": 1,
+     "dev_pair_f1_pos": 0.847263,
+     "file": "deepwide_fold03_epoch1.pt",
+     "bytes": 84423007,
+     "selected": false
+    },
+    {
+     "epoch": 2,
+     "dev_pair_f1_pos": 0.857075,
+     "file": "deepwide_fold03_epoch2.pt",
+     "bytes": 84423007,
+     "selected": false
+    },
+    {
+     "epoch": 3,
+     "dev_pair_f1_pos": 0.861215,
+     "file": "deepwide_fold03_epoch3.pt",
+     "bytes": 84423007,
+     "selected": true
+    },
+    {
+     "epoch": 4,
+     "dev_pair_f1_pos": 0.857661,
+     "file": "deepwide_fold03_epoch4.pt",
+     "bytes": 84423007,
+     "selected": false
+    },
+    {
+     "epoch": 5,
+     "dev_pair_f1_pos": 0.859193,
+     "file": "deepwide_fold03_epoch5.pt",
+     "bytes": 84423007,
+     "selected": false
+    },
+    {
+     "epoch": 6,
+     "dev_pair_f1_pos": 0.858914,
+     "file": "deepwide_fold03_epoch6.pt",
+     "bytes": 84423007,
+     "selected": false
+    },
+    {
+     "epoch": 7,
+     "dev_pair_f1_pos": 0.845764,
+     "file": "deepwide_fold03_epoch7.pt",
+     "bytes": 84423007,
+     "selected": false
+    },
+    {
+     "epoch": 8,
+     "dev_pair_f1_pos": 0.843889,
+     "file": "deepwide_fold03_epoch8.pt",
+     "bytes": 84423007,
+     "selected": false
+    }
+   ]
+  },
+  "fold_04": {
+   "selected_epoch": 1,
+   "selected_dev_pair_f1_pos": 0.897462,
+   "selected_file": "deepwide_fold04_epoch1.pt",
+   "all_epochs": [
+    {
+     "epoch": 1,
+     "dev_pair_f1_pos": 0.897462,
+     "file": "deepwide_fold04_epoch1.pt",
+     "bytes": 84423135,
+     "selected": true
+    },
+    {
+     "epoch": 2,
+     "dev_pair_f1_pos": 0.895812,
+     "file": "deepwide_fold04_epoch2.pt",
+     "bytes": 84423135,
+     "selected": false
+    },
+    {
+     "epoch": 3,
+     "dev_pair_f1_pos": 0.888305,
+     "file": "deepwide_fold04_epoch3.pt",
+     "bytes": 84423135,
+     "selected": false
+    },
+    {
+     "epoch": 4,
+     "dev_pair_f1_pos": 0.87803,
+     "file": "deepwide_fold04_epoch4.pt",
+     "bytes": 84423135,
+     "selected": false
+    },
+    {
+     "epoch": 5,
+     "dev_pair_f1_pos": 0.879472,
+     "file": "deepwide_fold04_epoch5.pt",
+     "bytes": 84423135,
+     "selected": false
+    },
+    {
+     "epoch": 6,
+     "dev_pair_f1_pos": 0.877193,
+     "file": "deepwide_fold04_epoch6.pt",
+     "bytes": 84423135,
+     "selected": false
+    },
+    {
+     "epoch": 7,
+     "dev_pair_f1_pos": 0.876752,
+     "file": "deepwide_fold04_epoch7.pt",
+     "bytes": 84423135,
+     "selected": false
+    },
+    {
+     "epoch": 8,
+     "dev_pair_f1_pos": 0.849109,
+     "file": "deepwide_fold04_epoch8.pt",
+     "bytes": 84423135,
+     "selected": false
+    }
+   ]
+  },
+  "fold_05": {
+   "selected_epoch": 1,
+   "selected_dev_pair_f1_pos": 0.851679,
+   "selected_file": "deepwide_fold05_epoch1.pt",
+   "all_epochs": [
+    {
+     "epoch": 1,
+     "dev_pair_f1_pos": 0.851679,
+     "file": "deepwide_fold05_epoch1.pt",
+     "bytes": 84423199,
+     "selected": true
+    },
+    {
+     "epoch": 2,
+     "dev_pair_f1_pos": 0.84607,
+     "file": "deepwide_fold05_epoch2.pt",
+     "bytes": 84423199,
+     "selected": false
+    },
+    {
+     "epoch": 3,
+     "dev_pair_f1_pos": 0.842551,
+     "file": "deepwide_fold05_epoch3.pt",
+     "bytes": 84423199,
+     "selected": false
+    },
+    {
+     "epoch": 4,
+     "dev_pair_f1_pos": 0.842457,
+     "file": "deepwide_fold05_epoch4.pt",
+     "bytes": 84423199,
+     "selected": false
+    },
+    {
+     "epoch": 5,
+     "dev_pair_f1_pos": 0.840928,
+     "file": "deepwide_fold05_epoch5.pt",
+     "bytes": 84423199,
+     "selected": false
+    },
+    {
+     "epoch": 6,
+     "dev_pair_f1_pos": 0.844347,
+     "file": "deepwide_fold05_epoch6.pt",
+     "bytes": 84423199,
+     "selected": false
+    },
+    {
+     "epoch": 7,
+     "dev_pair_f1_pos": 0.844431,
+     "file": "deepwide_fold05_epoch7.pt",
+     "bytes": 84423199,
+     "selected": false
+    },
+    {
+     "epoch": 8,
+     "dev_pair_f1_pos": 0.838415,
+     "file": "deepwide_fold05_epoch8.pt",
+     "bytes": 84423199,
+     "selected": false
+    }
+   ]
+  }
+ }
+}

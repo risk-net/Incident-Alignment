@@ -1,0 +1,134 @@
+# Data placement and asset inventory
+
+> 📖 中文版: [DATA_LAYOUT_zh-CN.md](./DATA_LAYOUT_zh-CN.md)
+
+This repository **ships** the frozen evaluation assets (cases with body text, candidate recall, per-field
+embeddings, five-fold checkpoints) but **does not redistribute** the full-corpus news database, the
+production FAISS index, or BGE-M3 model weights. Everything below is the contract consumed by the
+packaged scripts: `train_deepwide_pairwise_5fold.py` resolves these paths itself, and the
+`incident-align` CLI takes them as arguments. See `data/README.md` for what is actually present
+(≈5.7 GB) and `config/README.md` for the stage `ini` templates needed only when *rebuilding* assets.
+
+## 0. What is tracked in Git
+
+Only the **minimum reviewers need to rebuild everything** is committed (≈52 MiB of ≈5.7 GiB):
+
+- `data/chinese_gold/gold_v2.0.2_mapping.csv` + `gold_v2.0.2_structure.json` — the Chinese gold
+- `data/precomputed/eval_structure.json` — the English gold structure
+- `data/chinese_eval/cases.jsonl`, `data/english/test/cases.jsonl` — evaluation cases **with body text**
+- `data/english/folds/fold_splits.json` + `fold_0X/{train,dev,test}_incidents.json` — fold definition
+- `data/english/folds/fold_0X/*_gold.csv` and `fold_0X/dev/gold.csv` — per-fold gold
+
+Not tracked (rebuild or host separately): field embeddings, recall, prepared pairs, per-fold
+`dev`/`test` subsets, checkpoints, BGE-M3 weights, and all of `outputs/`. See
+`data/README.md` §"What is committed to Git" for the exact split and sizes, and
+`docs/REPRODUCIBILITY.md` §1b for the rebuild order.
+
+## 1. Directory tree
+
+```text
+data/
+├── english/
+│   ├── folds/
+│   │   ├── fold_splits.json                   # existing split metadata (read-only)
+│   │   ├── fold_01/                          # repeat for fold_02 ... fold_05
+│   │   │   ├── train/                        # prepared training inputs (original schema)
+│   │   │   └── dev/
+│   │   │       ├── cases.jsonl               # case input, original loader format
+│   │   │       ├── recall_topk.jsonl         # candidate recall, original loader format
+│   │   │       ├── embeddings/               # case_ids.txt, emb_<field>.npy, valid_mask_<field>.npy
+│   │   │       └── dev_gold.csv              # report_id,gold_v2_event_id（本包实际文件为 dev/gold.csv）
+│   │   └── ...
+│   └── test/
+│       ├── cases.jsonl                       # original case schema
+│       ├── recall_topk.jsonl                 # original recall schema
+│       ├── gold.csv                          # 注意：五折协议下用 fold_0X/test_gold.csv，非单份
+│       └── embeddings/                       # case_ids.txt + field arrays
+├── chinese_gold/
+│   └── gold_v2.0.2_mapping.csv               # 1,283 rows, fields report_id,gold_v2_event_id
+├── chinese_eval/
+│   ├── cases.jsonl                           # 1,283 cases in original loader format
+│   ├── recall_topk.jsonl                     # 1,283 queries
+│   └── embeddings/                           # 1,283 IDs + text-field arrays
+├── precomputed/
+│   └── eval_structure.json                   # English gold structure: 1,742 events / 5,998 reports
+└── full_pipeline/                            # optional only; never used in core evaluation
+config/                                       # stage ini templates (only for rebuilding assets)
+├── Incident_Align_Method-build_embeddings-config.ini
+├── Incident_Align_Method-build_faiss_index-config.ini
+├── Incident_Align_Method-run_recall-config.ini
+├── Incident_Align_Method-decode_graph_from_pairwise_checkpoints-config.ini
+└── chinese_eval_templates.ini
+checkpoints/
+└── deepwide/
+    ├── fold_01.pt                            # canonical best checkpoint per fold
+    ├── fold_01/                              # all epochs, kept as selection evidence
+    └── ... fold_05.pt
+outputs/
+├── dev/
+│   ├── probs/fold_0X_dev.npz                 # frozen Dev DeepWide probabilities
+│   ├── fold_0X_scores.jsonl                  # M6 score JSONL (converted from the npz)
+│   ├── fold_0X_scan.json                     # Dev threshold scan (source: dev_only)
+│   └── locked_thetas.json                    # five locked thetas (source: dev_only)
+├── english/graph_decode_5fold/                # per-fold scan/result/pred_clusters_test + summary
+└── chinese/                                   # locked-threshold metrics and predicted clusters
+```
+
+### Per-fold evaluation subsets
+
+`data/english/folds/fold_0X/dev/` and `.../test/` each contain a **self-contained projection** of
+that fold's evaluation domain — the same file names as `data/english/test/`:
+
+```text
+data/english/folds/fold_01/test/
+├── cases.jsonl                # 1,200 cases of this fold only
+├── recall_topk.jsonl          # queries + candidates restricted to this domain
+├── embeddings/                # same field arrays, row-aligned to case_ids.txt
+└── (gold lives one level up: data/english/folds/fold_01/test_gold.csv)
+```
+
+These subsets are generated by `scripts/make_fold_subsets.py` (read-only projection: no embedding
+recomputation, no recall rebuild). They exist because English Test folds are **disjoint**, so each
+fold must be evaluated against its own Gold; Chinese has a single shared 1,283-report domain and
+needs no per-fold projection.
+
+**Important:** Filenames in the tree (other than `gold_v2.0.2_mapping.csv`) are **recommended local destinations, not claims about the user's existing filename schema**. Original project readers may require JSON rather than JSONL, different field keys, checkpoint names, or field-specific files. Confirm with `research_pipeline/` loaders and point the commands to the actual files. Do not rename binary assets without adjusting paths.
+
+## 2. Required for each workflow
+
+| Workflow | Required inputs | Writes | Material generation? |
+|---|---|---|---|
+| Train five folds | fixed train/dev splits, original prepared pair data, feature embeddings, training config | `checkpoints/deepwide/` | No new dataset creation |
+| Dev threshold selection | five fold Dev gold mapping + five-fold DeepWide pair probabilities | `outputs/dev/` | No |
+| English held-out evaluation | English test gold, candidate scores for each fold, locked thresholds | `outputs/english/` | No |
+| Chinese Gold evaluation | **v2.0.2** mapping, 1,283 aligned cases, existing recall, aligned embeddings, checkpoint, locked thresholds | `outputs/chinese/` | No |
+| Full-corpus processing (optional) | original corpus/database access, pretrained BGE-M3, vector index, inference assets, DB credentials | external full pipeline outputs | Heavy; not part of planned rerun |
+
+## 3. Exact Gold mapping contract
+
+The Chinese Gold file is a CSV with headers **`report_id,gold_v2_event_id`** (extra columns permitted), **1,283 unique report IDs** and exactly **185 distinct event IDs** `zh_gold_0001`…`zh_gold_0185`. Obtain it from the separately frozen Scientific Data Chinese Gold v2.0.2 artifact; **do not substitute a historical `zh_eval_*` mapping**.
+
+The English gold schema consumed by `incident-align` also uses `report_id,gold_v2_event_id` (the name is a generic loader field, not an assertion that the English set is v2.0.2). If your English gold has different headers, make an explicit conversion into `data/english/test/gold.csv` without modifying source data.
+
+## 4. DeepWide field embedding rules
+
+Every embedding directory must contain `case_ids.txt` plus `emb_<field>.npy` and `valid_mask_<field>.npy` for the checkpoint's `text_fields`. The order of IDs **must match array row order**. Check checkpoint field metadata. The export utility currently assumes `case_ids.txt` equals `sorted(cases)`; if your original prepared order differs, **do not force-sort the embeddings**: reconcile the loader/order contract before running.
+
+## 5. Score file contract
+
+`incident-align` uses one JSON object per line. `scripts/export_pair_scores.py` writes `query_id`, `candidate_id`, `probability`; each ID must belong to the same evaluation domain; values must be finite, between 0 and 1. The candidate set must match the configured recall and relevant fold. Five-fold score files must be kept separate.
+
+## 6. Verify data placement
+
+```bash
+python scripts/check_assets.py --root . --profile chinese
+python scripts/check_assets.py --root . --profile english
+python scripts/check_assets.py --root . --profile train
+python scripts/check_assets.py --root . --profile full  # optional inventory only
+```
+
+The checker performs **inventory checks** (existence, CSV Gold uniqueness, optional embedding ID counts); it does **not** prove checkpoint-feature compatibility, recall semantic validity or numerical equivalence. Use actual loader and model integration tests before publishing results.
+
+## 7. Publication and security
+
+Do not commit corpora, proprietary news text, database passwords, API keys, model weights, or large embeddings to Git by default. Publish the frozen Gold artifact separately with a version and SHA-256; use a model/data hosting service for permitted large artifacts. Store hashes and acquisition instructions in Git.

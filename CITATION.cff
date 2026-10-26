@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this release, please cite the paper and this repository."
+title: "Incident Alignment: reproducible DeepWide-based incident clustering and cross-lingual event-level evaluation"
+abstract: >-
+  Reproduction package for training a Deep+Wide pairwise incident matcher on five
+  incident-level folds, selecting clustering thresholds on Dev only, and evaluating
+  held-out English and Chinese (Gold v2.0.2, 1,283 reports / 185 events) event-level
+  clustering with fixed thresholds (Hungarian event-level F1, B-cubed, ARI/NMI, and
+  induced pairwise P/R/F1).
+type: software
+version: 0.6.0
+date-released: "2026-10-26"
+license: MIT
+repository-code: "https://github.com/risk-net/Incident-Alignment"
+url: "https://github.com/risk-net/Incident-Alignment"
+keywords:
+  - incident alignment
+  - event clustering
+  - news
+  - AI risk
+  - reproducibility
+  - cross-lingual evaluation
+authors:
+  - name: "AI-Risk-News-Identification"
+    alias: "risk-net"
+    website: "https://github.com/risk-net"
+preferred-citation:
+  type: article
+  note: >-

@@ -1,0 +1,95 @@
+{
+ "note": "按五折划分投影的每折评测输入子集规模",
+ "subsets": [
+  {
+   "tag": "fold_01/test",
+   "cases": 1200,
+   "recall_queries": 1200,
+   "candidates_in": 271779,
+   "candidates_kept": 61850,
+   "embedding_rows": 1200,
+   "npy_files": 51
+  },
+  {
+   "tag": "fold_01/dev",
+   "cases": 1201,
+   "recall_queries": 1201,
+   "candidates_in": 264356,
+   "candidates_kept": 66286,
+   "embedding_rows": 1201,
+   "npy_files": 51
+  },
+  {
+   "tag": "fold_02/test",
+   "cases": 1201,
+   "recall_queries": 1201,
+   "candidates_in": 264356,
+   "candidates_kept": 66286,
+   "embedding_rows": 1201,
+   "npy_files": 51
+  },
+  {
+   "tag": "fold_02/dev",
+   "cases": 1198,
+   "recall_queries": 1198,
+   "candidates_in": 267870,
+   "candidates_kept": 56228,
+   "embedding_rows": 1198,
+   "npy_files": 51
+  },
+  {
+   "tag": "fold_03/test",
+   "cases": 1198,
+   "recall_queries": 1198,
+   "candidates_in": 267870,
+   "candidates_kept": 56228,
+   "embedding_rows": 1198,
+   "npy_files": 51
+  },
+  {
+   "tag": "fold_03/dev",
+   "cases": 1199,
+   "recall_queries": 1199,
+   "candidates_in": 267944,
+   "candidates_kept": 61432,
+   "embedding_rows": 1199,
+   "npy_files": 51
+  },
+  {
+   "tag": "fold_04/test",
+   "cases": 1199,
+   "recall_queries": 1199,
+   "candidates_in": 267944,
+   "candidates_kept": 61432,
+   "embedding_rows": 1199,
+   "npy_files": 51
+  },
+  {
+   "tag": "fold_04/dev",
+   "cases": 1200,
+   "recall_queries": 1200,
+   "candidates_in": 267691,
+   "candidates_kept": 59097,
+   "embedding_rows": 1200,
+   "npy_files": 51
+  },
+  {
+   "tag": "fold_05/test",
+   "cases": 1200,
+   "recall_queries": 1200,
+   "candidates_in": 267691,
+   "candidates_kept": 59097,
+   "embedding_rows": 1200,
+   "npy_files": 51
+  },
+  {
+   "tag": "fold_05/dev",
+   "cases": 1200,
+   "recall_queries": 1200,
+   "candidates_in": 271779,
+   "candidates_kept": 61850,
+   "embedding_rows": 1200,
+   "npy_files": 51
+  }
+ ]
+}

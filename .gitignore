@@ -1,0 +1,57 @@
+# ============================================================================
+# 忽略策略：大体积研究资产（embedding / recall / checkpoint / 模型权重 / 产物）
+# 一律不进 git；只有「评委复现必需的小体积数据」例外（见下方 allowlist）。
+# 总量参考：全包 5.7 GiB，其中进 git 的约 53 MiB。
+# ============================================================================
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.egg-info/
+
+# ---- 默认：数据、checkpoint、产物、模型权重都不进 git ----
+data/*
+!data/README.md
+!data/README_zh-CN.md
+checkpoints/*
+!checkpoints/.gitkeep
+outputs/*
+!outputs/**/.gitkeep
+models/
+
+# ---- 例外：评委从头复现必需的数据（体积小、不可再生）----
+# 金标
+!data/chinese_gold/
+# 英文 gold 结构
+!data/precomputed/
+# 中文评测集
+!data/chinese_eval/
+# 英文评测集 + 五折划分
+!data/english/
+
+# ---- 例外目录内，再排除可重建/大体积的部分 ----
+data/chinese_eval/embeddings/
+data/chinese_eval/recall_topk.jsonl
+data/chinese_eval/faiss/
+data/english/faiss_index/
+data/english/test/embeddings/
+data/english/test/recall_topk.jsonl
+data/english/folds/*/train/
+data/english/folds/*/dev/embeddings/
+data/english/folds/*/test/embeddings/
+data/english/folds/*/dev/recall_topk.jsonl
+data/english/folds/*/test/recall_topk.jsonl
+# 每折 case 子集可由 scripts/make_fold_subsets.py 从 data/english/test/cases.jsonl 重建
+data/english/folds/*/dev/cases.jsonl
+data/english/folds/*/test/cases.jsonl
+
+# ---- 二进制与模型 ----
+*.db
+*.faiss
+*.npy
+*.npz
+*.pt
+*.pth
+*.safetensors
+*.bin

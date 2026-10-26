@@ -1,0 +1,8 @@
+{
+  "python": "python",
+  "notes": "Edit local paths and review each command; not an automatically executable pipeline.",
+  "trained_model_export": "python scripts/export_pair_scores.py --checkpoint checkpoints/deepwide/fold_01.pt --cases data/english/test/cases.jsonl --recall data/english/test/recall_topk.jsonl --embeddings data/english/test/embeddings --output outputs/english/fold_01_scores.jsonl --device cuda:0",
+  "dev_select": "incident-align select-dev --gold data/english/folds/fold_01/dev_gold.csv --scores outputs/dev/fold_01_scores.jsonl --out outputs/dev/fold_01_scan.json --min 0.10 --max 0.95 --step 0.01",
+  "english_eval": "incident-align evaluate-folds --gold data/english/test/gold.csv --locked outputs/dev/locked_thetas.json --dataset english --fold-scores 1=outputs/english/fold_01_scores.jsonl --out outputs/english/evaluation",
+  "chinese_eval": "incident-align evaluate-folds --gold data/chinese_gold/gold_v2.0.2_mapping.csv --locked outputs/dev/locked_thetas.json --dataset chinese --expected-reports 1283 --expected-events 185 --fold-scores 1=outputs/chinese/fold_01_scores.jsonl --out outputs/chinese/evaluation"
+}
