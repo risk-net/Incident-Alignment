@@ -21,9 +21,13 @@ def serialize_scores(qc, probs):
  return rows
 
 def main():
- p=argparse.ArgumentParser()
+ p=argparse.ArgumentParser(description=__doc__)
  for name in ('checkpoint','cases','recall','embeddings','output'):p.add_argument('--'+name,required=True)
- p.add_argument('--topm',type=int,default=250);p.add_argument('--device',default='cpu');p.add_argument('--batch-size',type=int,default=512)
+ p.add_argument('--topm',type=int,default=200,
+                help='Top-M candidates per query, applied after recall fusion. '
+                     'MUST equal the training protocol: English uses 200 (training TOPM_OUT=200); '
+                     'Chinese uses 250. Changing this silently changes the scored pair set.')
+ p.add_argument('--device',default='cpu');p.add_argument('--batch-size',type=int,default=512)
  p.add_argument('--gold',help='Optional CSV with report_id column; strict scored domain')
  a=p.parse_args()
  from incident_alignment.deepwide.legacy.pairwise_data_io import load_cases_minimal,load_recall_topk,TEXT_FIELDS_DEFAULT

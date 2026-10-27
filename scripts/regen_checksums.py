@@ -31,6 +31,15 @@ EXCLUDE_DIRS = {".git", "__pycache__", ".pytest_cache", ".venv", "node_modules"}
 EXCLUDE_NAMES = {"SHA256SUMS.txt", "ASSET_MANIFEST.json"}
 SELF_REL = {"scripts/regen_checksums.py"}
 
+# 本地实验产物不算发布资产：它们是运行基线实验的副产物，体积大且因人而异，
+# 不应进入 ASSET_MANIFEST / SHA256SUMS（也不会进 git，见 .gitignore 的 outputs/*）。
+# 注意：outputs/chinese/、outputs/english/、outputs/dev/ 里是**正式流水线产物**，
+# 是论文数值的来源，必须继续纳入清单——只排除基线实验目录。
+EXCLUDE_PATH_PREFIXES = (
+    "outputs/benchmarks/",   # LR 基线实验（特征缓存、分数、日志、对照表）
+    ".smoke/",               # 冒烟测试残留
+)
+
 
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
@@ -69,6 +78,8 @@ def collect(root: Path):
         if any(part in EXCLUDE_DIRS for part in p.parts):
             continue
         if p.name in EXCLUDE_NAMES:
+            continue
+        if any(rel.startswith(pfx) for pfx in EXCLUDE_PATH_PREFIXES):
             continue
         if p.stat().st_size == 0:
             continue

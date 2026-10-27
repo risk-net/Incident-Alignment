@@ -105,7 +105,7 @@ outputs/benchmarks/
 | 数据集 | 规模 | 评测方式 | 阈值来源 |
 |---|---|---|---|
 | English | 5,998 篇 / 1,742 事件，5 折 incident-level CV | 每折在**各自的** held-out test 折上评测（约 1,200 篇） | dev 折上按 Hungarian G→P 选 τ |
-| Chinese | 1,283 篇 / 185 事件（`gold_v2.0.2`） | 单一评测域 | `outputs/dev/locked_thetas.json` 里锁定的每折 τ |
+| Chinese | 1,283 篇 / 185 事件（中文 Gold v1.1，文件 `gold_v2.0.2_mapping.csv`） | 单一评测域 | `outputs/dev/locked_thetas.json` 里锁定的每折 τ |
 
 **中文是零样本**：用英文五折各自训练出的 LR 权重直接给中文打分，
 5 折之间的差异只来自训练折不同，不是重训中文。

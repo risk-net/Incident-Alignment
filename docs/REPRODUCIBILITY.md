@@ -73,8 +73,13 @@ python scripts/export_pair_scores.py \
   --cases data/english/folds/fold_01/dev/cases.jsonl \
   --recall data/english/folds/fold_01/dev/recall_topk.jsonl \
   --embeddings data/english/folds/fold_01/dev/embeddings \
+  --topm 200 \
   --output outputs/dev/fold_01_scores.jsonl --device cuda:0
 ```
+
+> ⚠️ **`--topm 200` is mandatory for English.** The training protocol uses `TOPM_OUT = 200`;
+> any other value silently changes the scored pair set and invalidates the locked thresholds.
+> Chinese uses `--topm 250`.
 
 **(b) From the shipped Dev probability cache** (no inference; `.npz` → JSONL):
 
@@ -90,6 +95,24 @@ probabilities outside `[0,1]`, and writes a manifest with the SHA-256 of both
 files. **Always prefer (b) when the npz cache exists** — it is bit-identical to
 what the historical Dev threshold selection used, so the resulting thetas stay
 comparable to previously published values.
+
+**Are (a) and (b) equivalent?** The candidate-pair *sets* are — verified per fold by
+comparing every `(query_id, candidate_id)` key between the `.npz`-derived JSONL and the
+training-time prepared Dev pairs:
+
+| Fold | Pairs (both paths) | Identical set |
+|---|:---:|:---:|
+| 01 | 60,731 | ✅ |
+| 02 | 50,735 | ✅ |
+| 03 | 55,635 | ✅ |
+| 04 | 53,035 | ✅ |
+| 05 | 55,354 | ✅ |
+
+The two paths diverge only if `--topm` differs from 200 (English) / 250 (Chinese), or if the
+recall file was rebuilt. The **probabilities** are equivalent only when (a) uses the same
+checkpoint that produced the cache, on the same device — floating-point differences from
+different hardware can nudge a probability across a threshold bin edge. Locked thetas are
+robust to that, but do not claim bit-identical *scores* without re-verifying.
 
 Repeat for 02–05 with the **correct fold's** checkpoint, Dev files and actual filenames. Confirm score manifest and row counts. Do not use Chinese/English held-out gold during selection.
 
@@ -134,7 +157,7 @@ incident-align evaluate-folds --dataset english --locked outputs/dev/locked_thet
 valid in single-Gold mode (per-fold Golds have different sizes). The output `aggregate.json` records
 `gold_mode: "per_fold"` and the SHA-256 of each fold's Gold.
 
-## 5. Chinese Gold v2.0.2 evaluation
+## 5. Chinese Gold v1.1 evaluation
 
 All five folds score the **same** 1,283-report Chinese domain, so Chinese evaluation uses a **single**
 Gold file (`--gold`), not `--fold-gold`.

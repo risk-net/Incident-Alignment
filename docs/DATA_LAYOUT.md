@@ -101,12 +101,12 @@ needs no per-fold projection.
 | Train five folds | fixed train/dev splits, original prepared pair data, feature embeddings, training config | `checkpoints/deepwide/` | No new dataset creation |
 | Dev threshold selection | five fold Dev gold mapping + five-fold DeepWide pair probabilities | `outputs/dev/` | No |
 | English held-out evaluation | English test gold, candidate scores for each fold, locked thresholds | `outputs/english/` | No |
-| Chinese Gold evaluation | **v2.0.2** mapping, 1,283 aligned cases, existing recall, aligned embeddings, checkpoint, locked thresholds | `outputs/chinese/` | No |
+| Chinese Gold evaluation | **v1.1** mapping, 1,283 aligned cases, existing recall, aligned embeddings, checkpoint, locked thresholds | `outputs/chinese/` | No |
 | Full-corpus processing (optional) | original corpus/database access, pretrained BGE-M3, vector index, inference assets, DB credentials | external full pipeline outputs | Heavy; not part of planned rerun |
 
 ## 3. Exact Gold mapping contract
 
-The Chinese Gold file is a CSV with headers **`report_id,gold_v2_event_id`** (extra columns permitted), **1,283 unique report IDs** and exactly **185 distinct event IDs** `zh_gold_0001`…`zh_gold_0185`. Obtain it from the separately frozen Scientific Data Chinese Gold v2.0.2 artifact; **do not substitute a historical `zh_eval_*` mapping**.
+The Chinese Gold file is a CSV with headers **`report_id,gold_v2_event_id`** (extra columns permitted), **1,283 unique report IDs** and exactly **185 distinct event IDs** `zh_gold_0001`…`zh_gold_0185`. Obtain it from the separately frozen Chinese Gold v1.1 artifact (file name kept as `gold_v2.0.2_mapping.csv` for backwards compatibility); **do not substitute a historical `zh_eval_*` mapping**.
 
 The English gold schema consumed by `incident-align` also uses `report_id,gold_v2_event_id` (the name is a generic loader field, not an assertion that the English set is v2.0.2). If your English gold has different headers, make an explicit conversion into `data/english/test/gold.csv` without modifying source data.
 

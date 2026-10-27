@@ -65,12 +65,12 @@ outputs/
 | 五折训练 | 固定的 train/dev 划分、原始已准备的 pair 数据、特征 embedding、训练配置 | `checkpoints/deepwide/` | 不新建数据集 |
 | Dev 阈值选择 | 五折 Dev gold 映射 + 五折 DeepWide pair 概率 | `outputs/dev/` | 否 |
 | 英文留出评测 | 英文 test gold、各折候选分数、锁定的阈值 | `outputs/english/` | 否 |
-| 中文 Gold 评测 | **v2.0.2** 映射、1,283 条对齐 case、既有召回、对齐的 embedding、checkpoint、锁定阈值 | `outputs/chinese/` | 否 |
+| 中文 Gold 评测 | **v1.1** 映射、1,283 条对齐 case、既有召回、对齐的 embedding、checkpoint、锁定阈值 | `outputs/chinese/` | 否 |
 | 全量语料处理（可选） | 原始语料 / 数据库访问权限、预训练 BGE-M3、向量索引、推理资产、数据库凭据 | 外部全量流水线输出 | 重；不属于计划内的复跑 |
 
 ## 3. 精确的 Gold 映射契约
 
-中文 Gold 文件是 CSV，表头为 **`report_id,gold_v2_event_id`**（允许多余列），包含 **1,283 个唯一 report ID** 和恰好 **185 个不同事件 ID** `zh_gold_0001`…`zh_gold_0185`。请从单独冻结的 Scientific Data Chinese Gold v2.0.2 产物中获取；**不要用历史版本的 `zh_eval_*` 映射替代**。
+中文 Gold 文件是 CSV，表头为 **`report_id,gold_v2_event_id`**（允许多余列），包含 **1,283 个唯一 report ID** 和恰好 **185 个不同事件 ID** `zh_gold_0001`…`zh_gold_0185`。请从单独冻结的中文 Gold v1.1 产物中获取（文件名保留 `gold_v2.0.2_mapping.csv` 以兼容历史路径）；**不要用历史版本的 `zh_eval_*` 映射替代**。
 
 `incident-align` 使用的英文 gold schema 同样是 `report_id,gold_v2_event_id`（该名称只是通用 loader 字段，**并不表示**英文集是 v2.0.2 版本）。如果你的英文 gold 表头不同，请显式转换成 `data/english/test/gold.csv`，不要修改源数据。
 

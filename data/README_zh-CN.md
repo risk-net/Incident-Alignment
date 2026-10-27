@@ -10,7 +10,7 @@
 |---|---|---|
 | `data/chinese_gold/gold_v2.0.2_mapping.csv` | 27 KB | 中文评测集金标（唯一真值）：**1,283 篇 / 185 事件**，事件 ID `zh_gold_0001`…`zh_gold_0185` 连续无缺，SHA-256 `44d25a59…4caa` |
 | `data/chinese_gold/gold_v2.0.2_structure.json` | 29 KB | 上述映射的 `{events:[{incident_id,ids}]}` 结构视图，供召回脚本读取 |
-| `data/chinese_eval/chinese_eval_cases.jsonl` | 7.4 MB | 中文评测集 case 级数据，**1,283 行，含新闻正文**（`text` 字段 1,283/1,283 非空；`id` = `469377` 为采集占位符 `...`） |
+| `data/chinese_eval/cases.jsonl` | 7.0 MiB | 中文评测集 case 级数据，**1,283 行，含新闻正文**（`text` 字段 1,283/1,283 非空；个别 `id` 为采集占位符） |
 | `data/precomputed/eval_structure.json` | 191 KB | 英文评测集 Gold 结构：**1,742 个事件 / 5,998 篇**，每个报告只属于一个事件；文件内 `metadata` 仅描述当前数据集规模与字段，不含历史对比字段 |
 
 ## 哪些进 Git、哪些单独分发
@@ -52,12 +52,22 @@
 - 正文**仅供研究复现**使用（embedding、召回、pairwise 模型输入），不得商用转载或作为新闻语料二次发布。
 - 每条评测样本的原文链接保留在 `case_link` 字段，可回溯至原始出版方。
 
-## 尚未随包提供的数据（需自行放置）
+## 资产就位检查
 
-按 `docs/DATA_LAYOUT_zh-CN.md` 的约定位置放入：
+```bash
+python scripts/check_assets.py --root . --profile chinese   # 中文
+python scripts/check_assets.py --root . --profile english   # 英文
+python scripts/check_assets.py --root . --profile train     # 训练所需
+python scripts/check_assets.py --root . --profile folds     # 五折划分
+```
 
-- `data/english/**`：英文 cases、召回、embedding、五折划分与 test gold；
-- `data/chinese_eval/recall_topk.jsonl` 与 `data/chinese_eval/embeddings/`：中文召回与字段 embedding；
-- `checkpoints/deepwide/fold_0X.pt`：五折 DeepWide checkpoint。
+在完整工作目录（已放入召回 / embedding / checkpoint）下实测结果：
 
-`python scripts/check_assets.py --root . --profile chinese` 可检查上述文件是否就位（当前会报告 `cases.jsonl`、`recall_topk.jsonl`、`embeddings/case_ids.txt` 缺失，属预期状态）。
+| profile | 缺失项 | 说明 |
+|---|---|---|
+| `chinese` | **0** | 中文金标、cases、召回、embedding、`case_ids.txt` 齐备 |
+| `english` / `train` / `folds` | 0 | 英文 case、召回、embedding、五折划分、已准备 pair 齐备 |
+
+⚠️ 在**仅 Git 检出的干净克隆**里，`recall_topk.jsonl`、`embeddings/`、`folds/*/train/` 与
+`checkpoints/` 都不存在，`check_assets` 会如实报告缺失——此时需按上文「单独分发 / 由评委重建」
+一节补齐全，这不是错误状态。

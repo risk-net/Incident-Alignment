@@ -72,8 +72,12 @@ python scripts/export_pair_scores.py \
   --cases data/english/folds/fold_01/dev/cases.jsonl \
   --recall data/english/folds/fold_01/dev/recall_topk.jsonl \
   --embeddings data/english/folds/fold_01/dev/embeddings \
+  --topm 200 \
   --output outputs/dev/fold_01_scores.jsonl --device cuda:0
 ```
+
+> ⚠️ **英文导出必须显式写 `--topm 200`。** 训练协议为 `TOPM_OUT = 200`；换成其他值会
+> 静默改变被评分的 pair 集合，使锁定阈值失效。中文使用 `--topm 250`。
 
 02–05 折请用**对应折的** checkpoint、Dev 文件与实际文件名重复执行。核对分数 manifest 与行数。**阈值选择期间不得使用中文 / 英文留出集的 gold。**
 
@@ -88,6 +92,21 @@ python scripts/npz_to_score_jsonl.py --all --npz-dir outputs/dev/probs --out-dir
 非有限值、越界概率都会报错，并写出含两端 SHA-256 的 manifest。
 **存在 npz 缓存时应优先用方式 B**——它与历史 Dev 选阈所用的概率逐值一致，
 因此得到的 θ 可与既有已发表数值直接比较。
+
+**方式 A 与 B 是否等价？** 就**候选对集合**而言等价——已逐折把 `.npz` 转换产物的
+`(query_id, candidate_id)` 与训练时准备的 Dev pairs 做全量比对：
+
+| 折 | pair 数（两者相同） | 集合完全一致 |
+|---|:---:|:---:|
+| 01 | 60,731 | ✅ |
+| 02 | 50,735 | ✅ |
+| 03 | 55,635 | ✅ |
+| 04 | 53,035 | ✅ |
+| 05 | 55,354 | ✅ |
+
+只有在 `--topm` 不等于 200（英文）/ 250（中文），或召回文件被重建时，两条路径才会分叉。
+**概率值**仅在方式 A 使用同一 checkpoint、同一设备时等价——不同硬件带来的浮点差异可能
+让个别概率跨越阈值分箱边界。锁定阈值对此稳健，但不要未经复核就宣称"分数逐位一致"。
 
 ## 3. Dev 阈值选择
 
@@ -105,13 +124,29 @@ incident-align lock-thetas --dev-run 1=outputs/dev/fold_01_scan.json --dev-run 2
 
 ## 4. 英文留出集评测
 
-用同一个 `export_pair_scores.py` 导出五折 checkpoint 的分数，但把 `--cases`、`--recall`、`--embeddings` 指向 `data/english/test/`，并且每折分别输出。然后执行：
+英文五折的 Test 子集**互不重叠**（各约 1,200 篇）。因此每折必须用**自己那份 Gold**
+（`data/english/folds/fold_0X/test_gold.csv`）来评测。用一个全量 5,998 篇的 Gold 去评每一折是**错误**的：
+其余四折约 4,800 篇未被打分的 case 会变成单例，把指标稀释掉。
+
+用同一个 `export_pair_scores.py` 导出五折 checkpoint 的分数，把 `--cases`、`--recall`、`--embeddings`
+指向**该折**的 `data/english/folds/fold_0X/test/` 目录，并逐折分别输出，同时显式加 `--topm 200`。然后执行：
 
 ```bash
-incident-align evaluate-folds --gold data/english/test/gold.csv --dataset english --locked outputs/dev/locked_thetas.json --fold-scores 1=outputs/english/fold_01_scores.jsonl --fold-scores 2=outputs/english/fold_02_scores.jsonl --fold-scores 3=outputs/english/fold_03_scores.jsonl --fold-scores 4=outputs/english/fold_04_scores.jsonl --fold-scores 5=outputs/english/fold_05_scores.jsonl --out outputs/english/evaluation
+incident-align evaluate-folds --dataset english --locked outputs/dev/locked_thetas.json \
+  --fold-gold 1=data/english/folds/fold_01/test_gold.csv \
+  --fold-gold 2=data/english/folds/fold_02/test_gold.csv \
+  --fold-gold 3=data/english/folds/fold_03/test_gold.csv \
+  --fold-gold 4=data/english/folds/fold_04/test_gold.csv \
+  --fold-gold 5=data/english/folds/fold_05/test_gold.csv \
+  --fold-scores 1=outputs/english/fold_01_scores.jsonl --fold-scores 2=outputs/english/fold_02_scores.jsonl \
+  --fold-scores 3=outputs/english/fold_03_scores.jsonl --fold-scores 4=outputs/english/fold_04_scores.jsonl \
+  --fold-scores 5=outputs/english/fold_05_scores.jsonl --out outputs/english/evaluation
 ```
 
-## 5. 中文 Gold v2.0.2 评测
+`--fold-gold` 与 `--gold` 互斥。`--expected-reports` / `--expected-events` 只在单份 Gold 模式下有效
+（各折 Gold 的规模不同）。输出 `aggregate.json` 会记录 `gold_mode: "per_fold"` 以及每折 Gold 的 SHA-256。
+
+## 5. 中文 Gold v1.1 评测
 
 用**同一份冻结的**中文 cases / 召回 / embedding 导出五份模型分数文件；导出时传入 `--gold data/chinese_gold/gold_v2.0.2_mapping.csv`，以便做严格的域校验。然后执行：
 

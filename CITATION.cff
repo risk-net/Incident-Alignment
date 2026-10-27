@@ -4,7 +4,7 @@ title: "Incident Alignment: reproducible DeepWide-based incident clustering and 
 abstract: >-
   Reproduction package for training a Deep+Wide pairwise incident matcher on five
   incident-level folds, selecting clustering thresholds on Dev only, and evaluating
-  held-out English and Chinese (Gold v2.0.2, 1,283 reports / 185 events) event-level
+  held-out English and Chinese (Gold v1.1, 1,283 reports / 185 events) event-level
   clustering with fixed thresholds (Hungarian event-level F1, B-cubed, ARI/NMI, and
   induced pairwise P/R/F1).
 type: software
