@@ -445,8 +445,9 @@ def decode_and_evaluate_fold(prepared, fold_idx, best_ckpt):
         "num_pred_pos_pairs": int(_y_pred.sum()),
         "num_pairs": int(len(dev_y_true)),
         "score": float(best_dev["hungarian_g2p"]),
-        "event_macro_f1_hungarian_pred_to_gold": float(best_dev["hungarian_p2g"]),
-        "event_macro_f1_hungarian_symmetric": float(best_dev["hungarian_symmetric"]),
+        "hungarian_f1_g2p": float(best_dev["hungarian_g2p"]),
+        "hungarian_f1_p2g": float(best_dev["hungarian_p2g"]),
+        "hungarian_f1_symmetric": float(best_dev["hungarian_symmetric"]),
     })
 
     # Test evaluate
@@ -560,8 +561,8 @@ def main():
         print("  Time: {:.0f}s".format(time.time() - t_decode))
 
         tm = result["test_metrics"]
-        print("  Test Hungarian F1 (G->P): {:.4f}".format(tm["event_macro_f1_hungarian"]))
-        print("  Test Hungarian F1 (sym):  {:.4f}".format(tm["event_macro_f1_hungarian_symmetric"]))
+        print("  Test Hungarian F1 (G->P): {:.4f}".format(tm["hungarian_f1_g2p"]))
+        print("  Test Hungarian F1 (sym):  {:.4f}".format(tm["hungarian_f1_symmetric"]))
         print("  Test B-cubed F1:          {:.4f}".format(tm["b_cubed_f1"]))
         print("  Test ARI:                 {:.4f}".format(tm["ari"]))
         print("  Best dev tau:             {:.4f}".format(result["best_dev"]["threshold"]))
@@ -593,9 +594,9 @@ def main():
     print("=" * 70)
 
     metric_names = [
-        "event_macro_f1_hungarian",
-        "event_macro_f1_hungarian_symmetric",
-        "event_macro_f1_hungarian_pred_to_gold",
+        "hungarian_f1_g2p",
+        "hungarian_f1_symmetric",
+        "hungarian_f1_p2g",
         "b_cubed_f1", "b_cubed_precision", "b_cubed_recall",
         "ari", "induced_pair_f1", "induced_pair_precision", "induced_pair_recall",
         "pair_macro_f1", "pair_f1_pos", "pair_precision_pos", "pair_recall_pos",

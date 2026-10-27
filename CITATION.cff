@@ -24,6 +24,3 @@ authors:
   - name: "AI-Risk-News-Identification"
     alias: "risk-net"
     website: "https://github.com/risk-net"
-preferred-citation:
-  type: article
-  note: >-

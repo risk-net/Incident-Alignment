@@ -9,6 +9,7 @@
 | `Incident_Align_Method-build_faiss_index-config.ini` | `[BuildFaissIndex]` | `candidate_generation/build_faiss_index.py` |
 | `Incident_Align_Method-run_recall-config.ini` | `[RunRecall]` | `candidate_generation/run_recall.py` |
 | `Incident_Align_Method-decode_graph_from_pairwise_checkpoints-config.ini` | `[DecodeGraphFromPairwiseCheckpoints]` | `pairwise_and_clustering/decode_graph_from_pairwise_checkpoints.py` |
+| `Incident_Align_Method-baseline-logistic-regression-config.ini` | `[BaselineLogisticRegression]` | `baselines/run_baselines.py`（LR 基线驱动层） |
 | `chinese_eval_templates.ini` | 三段合并版 | 中文资产重建（需拆成上面三个同名文件后使用） |
 
 ## 什么时候需要它们

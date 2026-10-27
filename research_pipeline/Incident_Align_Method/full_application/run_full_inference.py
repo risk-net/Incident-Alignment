@@ -384,7 +384,7 @@ def main():
             "total_pairs_scored": total_pairs_scored,
         },
         "checkpoint_info": {
-            "best_dev_f1": float(checkpoint.get("best_dev_event_macro_f1", 0.0)),
+            "best_dev_f1": float(checkpoint.get("dev_pair_f1_pos", 0.0)),
             "best_epoch": int(checkpoint.get("best_epoch", -1)),
             "repeat_idx": int(checkpoint.get("repeat_idx", -1)),
             "seed": int(checkpoint.get("seed", -1)),

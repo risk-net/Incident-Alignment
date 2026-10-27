@@ -318,7 +318,7 @@ def _select_global_best_model(per_repeat_results: List[Dict[str, Any]]) -> Dict[
     def _sort_key(result: Dict[str, Any]) -> Tuple[float, float, int, int]:
         return (
             float(result["best_dev_score"]),
-            float(result["test_metrics"]["event_macro_f1_hungarian"]),
+            float(result["test_metrics"]["hungarian_f1_g2p"]),
             -int(result["repeat_idx"]),
             -int(result["best_epoch"]),
         )
@@ -354,7 +354,7 @@ def _materialize_global_best_model(output_dir: str, global_best: Dict[str, Any])
         "best_epoch": int(global_best["best_epoch"]),
         "best_checkpoint": _display_path(global_best["best_checkpoint"], base_dir),
         "best_dev_score": float(global_best["best_dev_score"]),
-        "best_test_score": float(global_best["test_metrics"]["event_macro_f1_hungarian"]),
+        "best_test_score": float(global_best["test_metrics"]["hungarian_f1_g2p"]),
         "best_graph_config": global_best["best_config"],
         "path_display_base": _display_path(base_dir, base_dir),
         "source_files": _display_paths_in_mapping(
@@ -777,8 +777,8 @@ def evaluate_repeat_with_best_checkpoint(
 
     LOGGER.info("[Save] repeat %s outputs -> %s", repeat_idx, output_paths["repeat_dir"])
     LOGGER.info(
-        "[Result] TEST event_macro_f1_hungarian=%.4f | pair_macro_f1=%.4f",
-        test_metrics["event_macro_f1_hungarian"],
+        "[Result] TEST hungarian_f1_g2p=%.4f | pair_macro_f1=%.4f",
+        test_metrics["hungarian_f1_g2p"],
         test_metrics["pair_macro_f1"],
     )
 
@@ -821,7 +821,7 @@ def build_global_summary(
     def _metric_vals(key):
         return [r["test_metrics"].get(key, 0.0) for r in per_repeat_results]
 
-    test_f1_values = _metric_vals("event_macro_f1_hungarian")
+    test_f1_values = _metric_vals("hungarian_f1_g2p")
     dev_scores = [r["best_dev_score"] for r in per_repeat_results]
     base_dir = artifacts.config.path_display_base
 
@@ -858,7 +858,7 @@ def build_global_summary(
         },
         "num_repeats": len(per_repeat_results),
         "test_metrics_across_repeats": {
-            "event_macro_f1_hungarian": {"mean": _mean_std(test_f1_values)[0], "std": _mean_std(test_f1_values)[1]},
+            "hungarian_f1_g2p": {"mean": _mean_std(test_f1_values)[0], "std": _mean_std(test_f1_values)[1]},
             "b_cubed_f1": {"mean": b3_mean, "std": b3_std},
             "ari": {"mean": ari_mean, "std": ari_std},
             "induced_pair_f1": {"mean": ipf_mean, "std": ipf_std},
@@ -933,7 +933,7 @@ def main():
     _write_json(summary_path, summary)
     LOGGER.info("[Done] graph decode summary -> %s", summary_path)
     LOGGER.info(
-        "[GlobalBest] repeat=%s epoch=%s test_event_macro_f1_hungarian=%.4f -> %s",
+        "[GlobalBest] repeat=%s epoch=%s test_hungarian_f1_g2p=%.4f -> %s",
         global_best_model["repeat_idx"],
         global_best_model["best_epoch"],
         global_best_model["best_test_score"],
